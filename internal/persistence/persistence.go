@@ -34,7 +34,9 @@ var Db DataBaseInterface
 func StartDataBase() {
 	var err error
 
-	conn, err := sql.Open("sqlite", "file:/home/pfc15/GolandProjects/PortifolioDuda/db/db.sqlite3?_foreign_keys=on&_busy_timeout=5000")
+	exPath := os.Getenv("ROOT")
+
+	conn, err := sql.Open("sqlite", "file:"+exPath+"/db/db.sqlite3?_foreign_keys=on&_busy_timeout=5000")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -44,7 +46,7 @@ func StartDataBase() {
 		db: conn,
 	}
 
-	query, err := os.ReadFile("/home/pfc15/GolandProjects/PortifolioDuda/db/create_db.sql")
+	query, err := os.ReadFile(exPath + "/db/create_db.sql")
 	if err != nil {
 		log.Println("erro lendo arquivo sql")
 		panic(err)
