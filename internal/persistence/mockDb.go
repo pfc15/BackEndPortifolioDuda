@@ -40,3 +40,15 @@ func (m *MockDb) Exec(query string, args ...interface{}) (sql.Result, error) {
 func (m *MockDb) GetObraIdByTitulo(titulo string) int {
 	return 1
 }
+
+func (m *MockDb) DeleteTema(titulo string) error {
+	return nil
+}
+
+func (m *MockDb) DeleteObra(titulo string) error {
+	return nil
+}
+
+func (m *MockDb) DeleteFoto(id int) error {
+	return nil
+}
