@@ -40,6 +40,39 @@ func AddObra(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func UpdateObra(w http.ResponseWriter, r *http.Request) {
+	type obraPayload struct {
+		TituloAntigo string `json:"titulo_antigo"`
+		Foto         string `json:"foto"`
+		Titulo       string `json:"titulo"`
+		Data         string `json:"data"`
+		Descricao    string `json:"descricao"`
+		Ordem        int    `json:"ordem"`
+		Tema         string `json:"tema"`
+		Link         string `json:"link"`
+	}
+	var p obraPayload
+	err := json.NewDecoder(r.Body).Decode(&p)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	obra_sql := persistence.NewObra(
+		p.TituloAntigo, p.Foto, p.Data, p.Descricao, p.Tema, p.Link, p.Ordem)
+	if obra_sql == nil {
+		log.Println("não encontrou tema ou foto")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	err = obra_sql.Update(p.Titulo)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+}
+
 func DeleteObra(w http.ResponseWriter, r *http.Request) {
 	type delObraPayload struct {
 		titulo string `json:"foto"`
@@ -123,7 +156,6 @@ func AddTema(w http.ResponseWriter, r *http.Request) {
 		p.Titulo,
 		p.Foto,
 		p.Ordem,
-		p.Periodo,
 	)
 	err := t_sql.Insert()
 	if err != nil {
@@ -164,6 +196,41 @@ func GetTemas(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func UpdateTema(w http.ResponseWriter, r *http.Request) {
+	type temaPayload struct {
+		TituloNovo string `json:"tituloNovo"`
+		Titulo     string `json:"titulo"`
+		Ordem      int    `json:"ordem"`
+		Foto       string `json:"foto"`
+		Periodo    string `json:"periodo"`
+	}
+	var p temaPayload
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&p); err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	t_sql := persistence.NewTema_sql(
+		p.Titulo,
+		p.Foto,
+		p.Ordem,
+	)
+	if t_sql == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	err := t_sql.Update(p.TituloNovo)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	defer r.Body.Close()
+}
+
 func DeleteTema(w http.ResponseWriter, r *http.Request) {
 	type temaPayload struct {
 		Tema string `json:"tema"`
@@ -182,6 +249,34 @@ func DeleteTema(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	log.Println("deleted tema", p.Tema)
+
+}
+
+func UpdateDescricao(w http.ResponseWriter, r *http.Request) {
+	type fotoPayload struct {
+		Descricao string `json:"descricao"`
+		Titulo    string `json:"titulo_foto"`
+	}
+	var p fotoPayload
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&p); err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	foto_sql := persistence.Foto_sql{
+		Titulo:    p.Titulo,
+		Descricao: p.Descricao,
+	}
+	err := foto_sql.UpdateDescricao(p.Descricao)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
 
 }
 

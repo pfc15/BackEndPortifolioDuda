@@ -1,6 +1,11 @@
 package persistence
 
-import "fmt"
+import (
+	"database/sql"
+	"errors"
+	"fmt"
+	"log"
+)
 
 type Obra struct {
 	Foto      int    `sql:"foto"`
@@ -13,12 +18,21 @@ type Obra struct {
 }
 
 func NewObra(titulo, foto, Periodo, descricao, tema, link string, ordem int) *Obra {
-	tema_id := Db.GetTemaIdByTitulo(tema)
-	if tema_id == -1 {
+
+	foto_id, err := Db.GetFotoID(foto)
+	if errors.Is(err, sql.ErrNoRows) {
+		t, err2 := Db.GetObraByTitulo(titulo)
+		if err2 != nil {
+			log.Println(err2)
+			return nil
+		}
+		foto_id = t.Foto
+	} else if err != nil {
+		log.Println(err)
 		return nil
 	}
-	foto_id, err := Db.GetFotoID(foto)
-	if err != nil {
+	tema_id := Db.GetTemaIdByTitulo(tema)
+	if tema_id == -1 {
 		return nil
 	}
 
@@ -48,20 +62,29 @@ func (o *Obra) Insert() error {
 			}
 		}
 	} else {
+		return fmt.Errorf("titulo já existe!")
+	}
+
+	return nil
+}
+
+func (o *Obra) Update(titulo_novo string) error {
+	id := Db.GetObraIdByTitulo(o.Titulo)
+	if id != -1 {
 		if o.Link == "" {
-			if _, err := Db.Exec("UPDATE obra SET titulo=?, foto=?, ordem=?, periodo=?, descricao=?, tema=?, link=? WHERE id=?;",
-				o.Titulo, o.Foto, o.Ordem, o.Periodo, o.Descricao, o.Tema, nil, id); err != nil {
+			if _, err := Db.Exec("UPDATE obra SET titulo=?, foto=?, ordem=?, periodo=?, descricao=?, tema=?, link='' WHERE obra.id=?;",
+				titulo_novo, o.Foto, o.Ordem, o.Periodo, o.Descricao, o.Tema, id); err != nil {
 				return err
 			}
 		} else {
-			if _, err := Db.Exec("UPDATE obra SET titulo=?, foto=?, ordem=?, periodo=?, descricao=?, tema=?, link=?"+
-				" WHERE id=?;",
-				o.Titulo, o.Foto, o.Ordem, o.Periodo, o.Descricao, o.Tema, o.Link, id); err != nil {
+			if _, err := Db.Exec("UPDATE obra SET titulo=?, foto=?, ordem=?, periodo=?, descricao=?, tema=?, link=? WHERE obra.id=?;",
+				titulo_novo, o.Foto, o.Ordem, o.Periodo, o.Descricao, o.Tema, o.Link, id); err != nil {
 				return err
 			}
 		}
+	} else {
+		return fmt.Errorf("titulo Não existe!")
 	}
-
 	return nil
 }
 
@@ -83,16 +106,24 @@ func (d *DataBase) GetObrasByTema(temaID int) ([]Obra, error) {
 	for rows.Next() {
 		var o Obra
 
+		var link sql.NullString
+
 		err = rows.Scan(
 			&o.Titulo,
 			&o.Foto,
 			&o.Periodo,
 			&o.Descricao,
 			&o.Ordem,
-			&o.Link,
+			&link,
 		)
 		if err != nil {
 			return nil, err
+		}
+
+		if link.Valid {
+			o.Link = link.String
+		} else {
+			o.Link = ""
 		}
 
 		obras = append(obras, o)
@@ -135,4 +166,16 @@ func (d *DataBase) DeleteObra(titulo string) error {
 		}
 	}
 	return nil
+}
+
+func (d *DataBase) GetObraByTitulo(titulo string) (Obra, error) {
+	var o Obra
+	row := d.db.QueryRow("SELECT titulo, foto, ordem, periodo, tema, link FROM obra WHERE obra.titulo=?;", titulo)
+	err := row.Scan(&o.Titulo, &o.Foto, &o.Ordem, &o.Periodo, &o.Tema, &o.Link)
+	if err != nil {
+		log.Println(err)
+		return Obra{}, err
+	}
+	return o, nil
+
 }

@@ -20,10 +20,12 @@ type DataBaseInterface interface {
 	GetObrasByTema(temaID int) ([]Obra, error)
 	GetObraIdByTitulo(titulo string) int
 	DeleteObra(titulo string) error
+	GetObraByTitulo(titulo string) (Obra, error)
 
 	GetallTemas() []Tema_sql
 	GetTemaIdByTitulo(titulo string) int
 	DeleteTema(titulo string) error
+	GetTemaByTitulo(titulo string) (Tema_sql, error)
 }
 type DataBase struct {
 	db *sql.DB

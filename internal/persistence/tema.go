@@ -1,46 +1,62 @@
 package persistence
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 )
 
 type Tema_sql struct {
-	Titulo  string `sql:"Titulo"`
-	Foto    int    `sql:"Foto"`
-	Ordem   int    `sql:"ordem"`
-	Periodo string `sql:"periodo"`
+	Titulo string `sql:"Titulo"`
+	Foto   int    `sql:"Foto"`
+	Ordem  int    `sql:"ordem"`
 }
 
-func NewTema_sql(titulo string, nome_foto string, ordem int, periodo string) *Tema_sql {
+func NewTema_sql(titulo string, nome_foto string, ordem int) *Tema_sql {
 	id, err := Db.GetFotoID(nome_foto)
-	if err != nil {
+	if errors.Is(err, sql.ErrNoRows) {
+		tema, err2 := Db.GetTemaByTitulo(titulo)
+		if err2 != nil {
+			log.Println(err2)
+			return nil
+		}
+		id = tema.Foto
+	} else if err != nil {
 		log.Println(err)
 		return nil
 	}
 	return &Tema_sql{
-		Titulo:  titulo,
-		Ordem:   ordem,
-		Periodo: periodo,
-		Foto:    id,
+		Titulo: titulo,
+		Ordem:  ordem,
+		Foto:   id,
 	}
 }
 
-func (t *Tema_sql) Insert(updates ...string) error {
+func (t *Tema_sql) Insert() error {
 	id := Db.GetTemaIdByTitulo(t.Titulo)
-	if len(updates) >= 0 {
-
-	}
 	if id == -1 {
 		if _, err := Db.Exec(
-			"INSERT INTO tema(titulo, Foto, ordem, periodo) VALUES (?,?,?,?);", t.Titulo, t.Foto, t.Ordem, t.Periodo); err != nil {
+			"INSERT INTO tema(titulo, Foto, ordem) VALUES (?,?,?);", t.Titulo, t.Foto, t.Ordem); err != nil {
 			return err
 		}
 	} else {
+		return fmt.Errorf("titulo %s already exists", t.Titulo)
+	}
+
+	return nil
+}
+
+func (t *Tema_sql) Update(titulo_novo string) error {
+	id := Db.GetTemaIdByTitulo(t.Titulo)
+	if id != -1 {
 		if _, err := Db.Exec(
-			"UPDATE tema SET titulo=?, Foto=?, ordem=?, periodo=? WHERE tema.id=?;", t.Titulo, t.Foto, t.Ordem, t.Periodo, id); err != nil {
+			"UPDATE tema SET titulo=?, Foto=?, ordem=? WHERE tema.id=?;", titulo_novo, t.Foto, t.Ordem, id); err != nil {
 			return err
 		}
+		t.Titulo = titulo_novo
+	} else {
+		return fmt.Errorf("titulo doesn't exists")
 	}
 
 	return nil
@@ -48,7 +64,7 @@ func (t *Tema_sql) Insert(updates ...string) error {
 
 func (d *DataBase) GetallTemas() []Tema_sql {
 	retorno := []Tema_sql{}
-	rows, err := d.db.Query("SELECT titulo, foto, ordem, periodo FROM tema;")
+	rows, err := d.db.Query("SELECT titulo, foto, ordem FROM tema;")
 	if err != nil {
 		log.Println(err)
 		return retorno
@@ -56,7 +72,7 @@ func (d *DataBase) GetallTemas() []Tema_sql {
 	defer rows.Close()
 	for rows.Next() {
 		var t Tema_sql
-		err = rows.Scan(&t.Titulo, &t.Foto, &t.Ordem, &t.Periodo)
+		err = rows.Scan(&t.Titulo, &t.Foto, &t.Ordem)
 		if err != nil {
 			log.Println(err)
 			return []Tema_sql{}
@@ -73,6 +89,17 @@ func (d *DataBase) GetTemaIdByTitulo(titulo string) int {
 		return -1
 	}
 	return id
+}
+
+func (d *DataBase) GetTemaByTitulo(titulo string) (Tema_sql, error) {
+	retorno := Tema_sql{}
+	row := d.db.QueryRow("SELECT titulo, foto, ordem FROM tema WHERE tema.titulo=?;", titulo)
+	err := row.Scan(&retorno.Titulo, &retorno.Foto, &retorno.Ordem)
+	if err != nil {
+		log.Println(err)
+		return Tema_sql{}, err
+	}
+	return retorno, nil
 }
 
 func (d *DataBase) DeleteTema(titulo string) error {

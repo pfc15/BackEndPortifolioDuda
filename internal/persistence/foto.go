@@ -38,6 +38,11 @@ func (f *Foto_sql) Insert() (*os.File, error) {
 	return dst, nil
 }
 
+func (f *Foto_sql) UpdateDescricao(nova_descrico string) error {
+	_, err := Db.Exec("UPDATE foto SET descricao=? WHERE foto.titulo=?;", nova_descrico, f.Titulo)
+	return err
+}
+
 func (d *DataBase) GetFotoByTitulo(titulo string) (foto Foto_sql, err error) {
 	err = d.db.QueryRow("SELECT Titulo, Descricao, path_foto FROM Foto WHERE Foto.Titulo=?", titulo).Scan(
 		&foto.Titulo, &foto.Descricao, &foto.File_name)
