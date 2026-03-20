@@ -14,7 +14,6 @@ func AddObra(w http.ResponseWriter, r *http.Request) {
 		Titulo    string `json:"titulo"`
 		Data      string `json:"data"`
 		Descricao string `json:"descricao"`
-		Ordem     int    `json:"ordem"`
 		Tema      string `json:"tema"`
 		Link      string `json:"link"`
 	}
@@ -26,7 +25,7 @@ func AddObra(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	obra_sql := persistence.NewObra(
-		p.Titulo, p.Foto, p.Data, p.Descricao, p.Tema, p.Link, p.Ordem)
+		p.Titulo, p.Foto, p.Data, p.Descricao, p.Tema, p.Link)
 	if obra_sql == nil {
 		log.Println("não encontrou tema ou foto")
 		w.WriteHeader(http.StatusBadRequest)
@@ -47,7 +46,6 @@ func UpdateObra(w http.ResponseWriter, r *http.Request) {
 		Titulo       string `json:"titulo"`
 		Data         string `json:"data"`
 		Descricao    string `json:"descricao"`
-		Ordem        int    `json:"ordem"`
 		Tema         string `json:"tema"`
 		Link         string `json:"link"`
 	}
@@ -59,7 +57,7 @@ func UpdateObra(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	obra_sql := persistence.NewObra(
-		p.TituloAntigo, p.Foto, p.Data, p.Descricao, p.Tema, p.Link, p.Ordem)
+		p.TituloAntigo, p.Foto, p.Data, p.Descricao, p.Tema, p.Link)
 	if obra_sql == nil {
 		log.Println("não encontrou tema ou foto")
 		w.WriteHeader(http.StatusBadRequest)
@@ -75,7 +73,7 @@ func UpdateObra(w http.ResponseWriter, r *http.Request) {
 
 func DeleteObra(w http.ResponseWriter, r *http.Request) {
 	type delObraPayload struct {
-		titulo string `json:"foto"`
+		Titulo string `json:"titulo"`
 	}
 	var p delObraPayload
 	err := json.NewDecoder(r.Body).Decode(&p)
@@ -84,7 +82,7 @@ func DeleteObra(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err = persistence.Db.DeleteObra(p.titulo)
+	err = persistence.Db.DeleteObra(p.Titulo)
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -140,7 +138,6 @@ func GetObras(w http.ResponseWriter, r *http.Request) {
 func AddTema(w http.ResponseWriter, r *http.Request) {
 	type temaPayload struct {
 		Titulo  string `json:"titulo"`
-		Ordem   int    `json:"ordem"`
 		Foto    string `json:"foto"`
 		Periodo string `json:"periodo"`
 	}
@@ -155,7 +152,6 @@ func AddTema(w http.ResponseWriter, r *http.Request) {
 	t_sql := persistence.NewTema_sql(
 		p.Titulo,
 		p.Foto,
-		p.Ordem,
 	)
 	err := t_sql.Insert()
 	if err != nil {
@@ -200,7 +196,6 @@ func UpdateTema(w http.ResponseWriter, r *http.Request) {
 	type temaPayload struct {
 		TituloNovo string `json:"tituloNovo"`
 		Titulo     string `json:"titulo"`
-		Ordem      int    `json:"ordem"`
 		Foto       string `json:"foto"`
 		Periodo    string `json:"periodo"`
 	}
@@ -215,7 +210,6 @@ func UpdateTema(w http.ResponseWriter, r *http.Request) {
 	t_sql := persistence.NewTema_sql(
 		p.Titulo,
 		p.Foto,
-		p.Ordem,
 	)
 	if t_sql == nil {
 		w.WriteHeader(http.StatusBadRequest)

@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS tema (
     id INTEGER PRIMARY KEY,
     titulo TEXT UNIQUE,
     Foto INTERGER UNIQUE,
-    ordem INTEGER UNIQUE,
     FOREIGN KEY (Foto) REFERENCES Foto(id) ON DELETE SET NULL
 );
 
@@ -21,9 +20,8 @@ CREATE TABLE IF NOT EXISTS  Obra (
     Foto INTEGER UNIQUE,
     periodo DATE,
     descricao TEXT,
-    ordem INTEGER unique,
     tema INTEGER,
-    link TEXT default '',
+    link TEXT default '#',
 
     FOREIGN KEY (tema) REFERENCES tema(id) ON DELETE SET NULL,
     FOREIGN KEY (Foto) REFERENCES Foto(id) ON DELETE SET NULL

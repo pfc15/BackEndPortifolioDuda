@@ -24,7 +24,6 @@ func (s *TemaTestSuite) TestNewTema_sqlSuccess() {
 
 	s.NotNil(tema)
 	s.Equal(tema.Titulo, "titulo")
-	s.Equal(tema.Ordem, 1)
 	s.Equal(tema.Periodo, "2025-02-02")
 	s.Equal(tema.Foto, 1)
 }

@@ -12,12 +12,11 @@ type Obra struct {
 	Titulo    string `sql:"titulo"`
 	Periodo   string `sql:"periodo"`
 	Descricao string `sql:"descricao"`
-	Ordem     int    `sql:"ordem"`
 	Tema      int    `sql:"tema"`
 	Link      string `sql:"link"`
 }
 
-func NewObra(titulo, foto, Periodo, descricao, tema, link string, ordem int) *Obra {
+func NewObra(titulo, foto, Periodo, descricao, tema, link string) *Obra {
 
 	foto_id, err := Db.GetFotoID(foto)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -41,7 +40,6 @@ func NewObra(titulo, foto, Periodo, descricao, tema, link string, ordem int) *Ob
 		Foto:      foto_id,
 		Periodo:   Periodo,
 		Descricao: descricao,
-		Ordem:     ordem,
 		Tema:      tema_id,
 		Link:      link,
 	}
@@ -51,13 +49,13 @@ func (o *Obra) Insert() error {
 	id := Db.GetObraIdByTitulo(o.Titulo)
 	if id == -1 {
 		if o.Link == "" {
-			if _, err := Db.Exec("INSERT INTO Obra(titulo, foto, ordem, periodo, descricao, tema) VALUES (?,?,?,?,?,?);",
-				o.Titulo, o.Foto, o.Ordem, o.Periodo, o.Descricao, o.Tema); err != nil {
+			if _, err := Db.Exec("INSERT INTO Obra(titulo, foto,  periodo, descricao, tema) VALUES (?,?,?,?,?);",
+				o.Titulo, o.Foto, o.Periodo, o.Descricao, o.Tema); err != nil {
 				return err
 			}
 		} else {
-			if _, err := Db.Exec("INSERT INTO Obra(titulo, foto, ordem, periodo, descricao, tema, link) VALUES (?,?,?,?,?,?,?);",
-				o.Titulo, o.Foto, o.Ordem, o.Periodo, o.Descricao, o.Tema, o.Link); err != nil {
+			if _, err := Db.Exec("INSERT INTO Obra(titulo, foto, periodo, descricao, tema, link) VALUES (?,?,?,?,?,?);",
+				o.Titulo, o.Foto, o.Periodo, o.Descricao, o.Tema, o.Link); err != nil {
 				return err
 			}
 		}
@@ -72,13 +70,13 @@ func (o *Obra) Update(titulo_novo string) error {
 	id := Db.GetObraIdByTitulo(o.Titulo)
 	if id != -1 {
 		if o.Link == "" {
-			if _, err := Db.Exec("UPDATE obra SET titulo=?, foto=?, ordem=?, periodo=?, descricao=?, tema=?, link='' WHERE obra.id=?;",
-				titulo_novo, o.Foto, o.Ordem, o.Periodo, o.Descricao, o.Tema, id); err != nil {
+			if _, err := Db.Exec("UPDATE obra SET titulo=?, foto=?, periodo=?, descricao=?, tema=?, link='' WHERE obra.id=?;",
+				titulo_novo, o.Foto, o.Periodo, o.Descricao, o.Tema, id); err != nil {
 				return err
 			}
 		} else {
-			if _, err := Db.Exec("UPDATE obra SET titulo=?, foto=?, ordem=?, periodo=?, descricao=?, tema=?, link=? WHERE obra.id=?;",
-				titulo_novo, o.Foto, o.Ordem, o.Periodo, o.Descricao, o.Tema, o.Link, id); err != nil {
+			if _, err := Db.Exec("UPDATE obra SET titulo=?, foto=?, periodo=?, descricao=?, tema=?, link=? WHERE obra.id=?;",
+				titulo_novo, o.Foto, o.Periodo, o.Descricao, o.Tema, o.Link, id); err != nil {
 				return err
 			}
 		}
@@ -91,7 +89,7 @@ func (o *Obra) Update(titulo_novo string) error {
 func (d *DataBase) GetObrasByTema(temaID int) ([]Obra, error) {
 
 	rows, err := d.db.Query(
-		`SELECT titulo, foto, periodo, descricao, ordem, link 
+		`SELECT titulo, foto, periodo, descricao,  link 
 		 FROM Obra 
 		 WHERE Obra.tema = ?;`,
 		temaID,
@@ -113,7 +111,6 @@ func (d *DataBase) GetObrasByTema(temaID int) ([]Obra, error) {
 			&o.Foto,
 			&o.Periodo,
 			&o.Descricao,
-			&o.Ordem,
 			&link,
 		)
 		if err != nil {
@@ -170,8 +167,8 @@ func (d *DataBase) DeleteObra(titulo string) error {
 
 func (d *DataBase) GetObraByTitulo(titulo string) (Obra, error) {
 	var o Obra
-	row := d.db.QueryRow("SELECT titulo, foto, ordem, periodo, tema, link FROM obra WHERE obra.titulo=?;", titulo)
-	err := row.Scan(&o.Titulo, &o.Foto, &o.Ordem, &o.Periodo, &o.Tema, &o.Link)
+	row := d.db.QueryRow("SELECT titulo, foto, periodo, tema, link FROM obra WHERE obra.titulo=?;", titulo)
+	err := row.Scan(&o.Titulo, &o.Foto, &o.Periodo, &o.Tema, &o.Link)
 	if err != nil {
 		log.Println(err)
 		return Obra{}, err

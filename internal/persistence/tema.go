@@ -10,10 +10,9 @@ import (
 type Tema_sql struct {
 	Titulo string `sql:"Titulo"`
 	Foto   int    `sql:"Foto"`
-	Ordem  int    `sql:"ordem"`
 }
 
-func NewTema_sql(titulo string, nome_foto string, ordem int) *Tema_sql {
+func NewTema_sql(titulo string, nome_foto string) *Tema_sql {
 	id, err := Db.GetFotoID(nome_foto)
 	if errors.Is(err, sql.ErrNoRows) {
 		tema, err2 := Db.GetTemaByTitulo(titulo)
@@ -28,7 +27,6 @@ func NewTema_sql(titulo string, nome_foto string, ordem int) *Tema_sql {
 	}
 	return &Tema_sql{
 		Titulo: titulo,
-		Ordem:  ordem,
 		Foto:   id,
 	}
 }
@@ -37,7 +35,7 @@ func (t *Tema_sql) Insert() error {
 	id := Db.GetTemaIdByTitulo(t.Titulo)
 	if id == -1 {
 		if _, err := Db.Exec(
-			"INSERT INTO tema(titulo, Foto, ordem) VALUES (?,?,?);", t.Titulo, t.Foto, t.Ordem); err != nil {
+			"INSERT INTO tema(titulo, Foto) VALUES (?,?);", t.Titulo, t.Foto); err != nil {
 			return err
 		}
 	} else {
@@ -51,7 +49,7 @@ func (t *Tema_sql) Update(titulo_novo string) error {
 	id := Db.GetTemaIdByTitulo(t.Titulo)
 	if id != -1 {
 		if _, err := Db.Exec(
-			"UPDATE tema SET titulo=?, Foto=?, ordem=? WHERE tema.id=?;", titulo_novo, t.Foto, t.Ordem, id); err != nil {
+			"UPDATE tema SET titulo=?, Foto=? WHERE tema.id=?;", titulo_novo, t.Foto, id); err != nil {
 			return err
 		}
 		t.Titulo = titulo_novo
@@ -64,7 +62,7 @@ func (t *Tema_sql) Update(titulo_novo string) error {
 
 func (d *DataBase) GetallTemas() []Tema_sql {
 	retorno := []Tema_sql{}
-	rows, err := d.db.Query("SELECT titulo, foto, ordem FROM tema;")
+	rows, err := d.db.Query("SELECT titulo, foto FROM tema;")
 	if err != nil {
 		log.Println(err)
 		return retorno
@@ -72,7 +70,7 @@ func (d *DataBase) GetallTemas() []Tema_sql {
 	defer rows.Close()
 	for rows.Next() {
 		var t Tema_sql
-		err = rows.Scan(&t.Titulo, &t.Foto, &t.Ordem)
+		err = rows.Scan(&t.Titulo, &t.Foto)
 		if err != nil {
 			log.Println(err)
 			return []Tema_sql{}
@@ -93,8 +91,8 @@ func (d *DataBase) GetTemaIdByTitulo(titulo string) int {
 
 func (d *DataBase) GetTemaByTitulo(titulo string) (Tema_sql, error) {
 	retorno := Tema_sql{}
-	row := d.db.QueryRow("SELECT titulo, foto, ordem FROM tema WHERE tema.titulo=?;", titulo)
-	err := row.Scan(&retorno.Titulo, &retorno.Foto, &retorno.Ordem)
+	row := d.db.QueryRow("SELECT titulo, foto FROM tema WHERE tema.titulo=?;", titulo)
+	err := row.Scan(&retorno.Titulo, &retorno.Foto)
 	if err != nil {
 		log.Println(err)
 		return Tema_sql{}, err
