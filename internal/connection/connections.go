@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func AddObra(w http.ResponseWriter, r *http.Request) {
@@ -289,11 +290,21 @@ func FileUploadHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Uploaded File: %s\n", handler.Filename)
 	fmt.Fprintf(w, "File Size: %d\n", handler.Size)
 	fmt.Fprintf(w, "MIME Header: %v\n", handler.Header)
+	posx, err := strconv.ParseFloat(r.FormValue("posx"), 64)
+	posy, err := strconv.ParseFloat(r.FormValue("posy"), 64)
+	zoom, err := strconv.ParseFloat(r.FormValue("zoom"), 64)
+	if err != nil {
+		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
+		return
+	}
 
 	obj_foto := persistence.Foto_sql{
 		Titulo:    r.FormValue("Titulo"),
 		File_name: r.FormValue("File_name"),
 		Descricao: r.FormValue("Descricao"),
+		Posx:      posx,
+		Posy:      posy,
+		Zoom:      zoom,
 	}
 
 	// Now let’s save it locally

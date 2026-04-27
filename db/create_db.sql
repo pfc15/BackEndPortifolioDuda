@@ -2,8 +2,12 @@ CREATE TABLE IF NOT EXISTS Foto(
     id INTEGER PRIMARY KEY,
     Titulo TEXT UNIQUE,
     path_foto TEXT UNIQUE,
+    posx double,
+    posy double,
+    zoom double,
     Descricao TEXT
 );
+
 CREATE INDEX IF NOT EXISTS idx_titulo_foto
     ON Foto(Titulo);
 

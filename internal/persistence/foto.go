@@ -6,9 +6,12 @@ import (
 )
 
 type Foto_sql struct {
-	Titulo    string `sql:"Titulo"`
-	File_name string `sql:"path_foto"`
-	Descricao string `sql:"Descricao"`
+	Titulo    string  `sql:"Titulo"`
+	File_name string  `sql:"path_foto"`
+	Descricao string  `sql:"Descricao"`
+	Posx      float64 `sql:"posx"`
+	Posy      float64 `sql:"posy"`
+	Zoom      float64 `sql:"zoom"`
 }
 
 func (f *Foto_sql) Insert() (*os.File, error) {
@@ -26,12 +29,14 @@ func (f *Foto_sql) Insert() (*os.File, error) {
 	isFotoNew, _ := Db.GetFotoID(f.Titulo)
 	if isFotoNew != -1 {
 		if _, err = Db.Exec(
-			"UPDATE foto SET Titulo =?, path_foto=?, Descricao=? WHERE foto.id=?;", f.Titulo, f.File_name, f.Descricao, isFotoNew); err != nil {
+			"UPDATE foto SET Titulo =?, path_foto=?, Descricao=?, posx=?, posy=?, zoom=? WHERE foto.id=?;", f.Titulo, f.File_name, f.Descricao,
+			f.Posx, f.Posy, f.Zoom, isFotoNew); err != nil {
 			return nil, err
 		}
 	} else {
 		if _, err = Db.Exec(
-			"INSERT INTO Foto(Titulo, path_foto, Descricao) VALUES (?, ?, ?);", f.Titulo, f.File_name, f.Descricao); err != nil {
+			"INSERT INTO Foto(Titulo, path_foto, Descricao,  posx, posy, zoom) VALUES (?, ?, ?, ?, ?, ?);", f.Titulo, f.File_name, f.Descricao,
+			f.Posx, f.Posy, f.Zoom); err != nil {
 			return nil, err
 		}
 	}
@@ -44,8 +49,8 @@ func (f *Foto_sql) UpdateDescricao(nova_descrico string) error {
 }
 
 func (d *DataBase) GetFotoByTitulo(titulo string) (foto Foto_sql, err error) {
-	err = d.db.QueryRow("SELECT Titulo, Descricao, path_foto FROM Foto WHERE Foto.Titulo=?", titulo).Scan(
-		&foto.Titulo, &foto.Descricao, &foto.File_name)
+	err = d.db.QueryRow("SELECT Titulo, Descricao, path_foto, posx, posy, zoom FROM Foto WHERE Foto.Titulo=?", titulo).Scan(
+		&foto.Titulo, &foto.Descricao, &foto.File_name, &foto.Posx, &foto.Posy, &foto.Zoom)
 	if err != nil {
 		return foto, err
 	}
@@ -54,8 +59,8 @@ func (d *DataBase) GetFotoByTitulo(titulo string) (foto Foto_sql, err error) {
 
 func (d *DataBase) GetFotoById(id int) (foto Foto_sql, err error) {
 
-	err = d.db.QueryRow("SELECT Titulo, Descricao, path_foto FROM Foto WHERE Foto.id=?;", id).Scan(
-		&foto.Titulo, &foto.Descricao, &foto.File_name)
+	err = d.db.QueryRow("SELECT Titulo, Descricao, path_foto, posx, posy, zoom FROM Foto WHERE Foto.id=?;", id).Scan(
+		&foto.Titulo, &foto.Descricao, &foto.File_name, &foto.Posx, &foto.Posy, &foto.Zoom)
 	if err != nil {
 		return foto, err
 	}
