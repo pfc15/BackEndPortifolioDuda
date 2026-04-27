@@ -50,7 +50,7 @@ func main() {
 	http.HandleFunc("api/getInfoFoto", connection.GetFoto)
 	http.HandleFunc("/api/upload", connection.FileUploadHandler)
 	http.HandleFunc("/api/deleteFoto", connection.DeleteFoto)
-	http.HandleFunc("/api/updateDescricaoFoto", connection.UpdateDescricao)
+	http.HandleFunc("/api/updateFtInfo", connection.UpdateFtInfo)
 	http.HandleFunc("/api/olaMundo", connection.OlaMundoHandler)
 
 	log.Println("Listening on :8080")

@@ -248,10 +248,13 @@ func DeleteTema(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func UpdateDescricao(w http.ResponseWriter, r *http.Request) {
+func UpdateFtInfo(w http.ResponseWriter, r *http.Request) {
 	type fotoPayload struct {
 		Descricao string `json:"descricao"`
 		Titulo    string `json:"titulo_foto"`
+		Posx      string `json:"posx"`
+		Posy      string `json:"posy"`
+		Zoom      string `json:"zoom"`
 	}
 	var p fotoPayload
 	decoder := json.NewDecoder(r.Body)
@@ -261,11 +264,30 @@ func UpdateDescricao(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	posx, err := strconv.ParseFloat(p.Posx, 64)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+	}
+	posy, err := strconv.ParseFloat(p.Posy, 64)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+	}
+	zoom, err := strconv.ParseFloat(p.Zoom, 64)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
 	foto_sql := persistence.Foto_sql{
 		Titulo:    p.Titulo,
 		Descricao: p.Descricao,
+		Posx:      posx,
+		Posy:      posy,
+		Zoom:      zoom,
 	}
-	err := foto_sql.UpdateDescricao(p.Descricao)
+	err = foto_sql.UpdateInfo(p.Descricao, posx, posy, zoom)
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusBadRequest)

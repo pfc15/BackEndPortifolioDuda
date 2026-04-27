@@ -43,6 +43,12 @@ func (f *Foto_sql) Insert() (*os.File, error) {
 	return dst, nil
 }
 
+func (f *Foto_sql) UpdateInfo(nova_descrico string, novo_posx float64, novo_posy float64, novo_zoom float64) error {
+	_, err := Db.Exec("UPDATE foto SET descricao=?, posx=?, posy=?, zoom=? WHERE foto.titulo=?;", nova_descrico,
+		novo_posx, novo_posy, novo_zoom, f.Titulo)
+	return err
+}
+
 func (f *Foto_sql) UpdateDescricao(nova_descrico string) error {
 	_, err := Db.Exec("UPDATE foto SET descricao=? WHERE foto.titulo=?;", nova_descrico, f.Titulo)
 	return err
