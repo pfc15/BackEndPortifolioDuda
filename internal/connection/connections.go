@@ -294,7 +294,6 @@ func UpdateFtInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-
 }
 
 func FileUploadHandler(w http.ResponseWriter, r *http.Request) {
@@ -312,6 +311,7 @@ func FileUploadHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Uploaded File: %s\n", handler.Filename)
 	fmt.Fprintf(w, "File Size: %d\n", handler.Size)
 	fmt.Fprintf(w, "MIME Header: %v\n", handler.Header)
+	fmt.Printf("%s zoom;", r.FormValue("zoom"))
 	posx, err := strconv.ParseFloat(r.FormValue("posx"), 64)
 	posy, err := strconv.ParseFloat(r.FormValue("posy"), 64)
 	zoom, err := strconv.ParseFloat(r.FormValue("zoom"), 64)
