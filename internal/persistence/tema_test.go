@@ -20,16 +20,18 @@ func (s *TemaTestSuite) SetupTest() {
 
 func (s *TemaTestSuite) TestNewTema_sqlSuccess() {
 
-	tema := NewTema_sql("titulo", "foto", 1, "2025-02-02")
+	tema := NewTema_sql("titulo", "foto")
 
 	s.NotNil(tema)
-	s.Equal(tema.Titulo, "titulo")
-	s.Equal(tema.Periodo, "2025-02-02")
-	s.Equal(tema.Foto, 1)
+	if tema != nil {
+		s.Equal(tema.Titulo, "titulo")
+		s.Equal(tema.Foto, 1)
+	}
+
 }
 
 func (s *TemaTestSuite) TestNewTema_sqlFailure() {
-	tema := NewTema_sql("titulo", "foto_nao_existe", 1, "2025-02-02")
+	tema := NewTema_sql("titulo", "foto_nao_existe")
 	s.Nil(tema)
 }
 
